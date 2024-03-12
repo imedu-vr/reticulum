@@ -730,6 +730,9 @@ defmodule RetWeb.PageController do
           )
 
         body = ReverseProxyPlug.read_body(conn)
+
+        Logger.debug("Body: #{inspect(body)}")
+
         is_head = conn |> Conn.get_req_header("x-original-method") == ["HEAD"]
 
         Logger.debug("Proxy Opts: #{inspect(opts)}, Is HEAD: #{inspect(is_head)}")

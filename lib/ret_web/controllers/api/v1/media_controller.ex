@@ -201,6 +201,7 @@ end
   end
 
   defp render_resolved_media_or_error(conn, {_status, %Ret.ResolvedMedia{} = resolved_media}) do
+    Logger.debug("render_resolved_media_or_error")
     render_resolved_media(conn, resolved_media)
   end
 
