@@ -711,6 +711,9 @@ defmodule RetWeb.PageController do
       if is_cors_proxy_url do
         allowed_origins =
           Application.get_env(:ret, RetWeb.Endpoint)[:allowed_origins] |> String.split(",")
+
+        Logger.debug("allowed origins: #{inspect(allowed_origins)}")
+
         opts =
           ReverseProxyPlug.init(
             upstream: url,

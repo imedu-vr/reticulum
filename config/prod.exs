@@ -34,7 +34,11 @@ config :ret, RetWeb.Endpoint,
   root: "."
 
 # Do not print debug messages in production
-config :logger, level: :info
+#config :logger, level: :info
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id],
+  level: :debug
 
 config :ret, Ret.Repo,
   username: "postgres",
