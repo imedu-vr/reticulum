@@ -664,12 +664,17 @@ defmodule RetWeb.PageController do
   end
 
   defp cors_proxy(%Conn{request_path: "/" <> url, query_string: ""} = conn),
+    Logger.debug("cors_proxy 1 url: #{inspect(url)}")
     do: cors_proxy(conn, url)
 
   defp cors_proxy(%Conn{request_path: "/" <> url, query_string: qs} = conn),
+    Logger.debug("cors_proxy 2 url: #{inspect(url)}, qs IP: #{inspect(qs)}")
     do: cors_proxy(conn, "#{url}?#{qs}")
 
   defp cors_proxy(conn, url) do
+
+    Logger.debug("cors_proxy 3 url: #{inspect(url)}")
+
     %URI{authority: authority, host: host} = uri = URI.parse(url)
 
     resolved_ip = HttpUtils.resolve_ip(host)
