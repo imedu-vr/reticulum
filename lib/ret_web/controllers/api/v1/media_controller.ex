@@ -3,6 +3,8 @@ defmodule RetWeb.Api.V1.MediaController do
   use Retry
   alias Ret.Statix
 
+  require Logger
+
   def create(conn, %{"media" => %{"url" => url, "quality" => quality}, "version" => version}),
     do: resolve_and_render(conn, url, version, String.to_atom(quality))
 
@@ -111,13 +113,29 @@ defmodule RetWeb.Api.V1.MediaController do
     end
   end
 
-  defp resolve_and_render(conn, url, version, quality \\ nil) do
-    query = query_for(conn, url, version, quality)
-    value = Cachex.fetch(:media_urls, query)
-    maybe_do_telemetry(value)
-    maybe_bump_ttl(value, query)
-    render_resolved_media_or_error(conn, value)
-  end
+ defp resolve_and_render(conn, url, version, quality \\ nil) do
+  Logger.debug("Starting resolve_and_render with URL: #{url}, Version: #{version}, Quality: #{quality}")
+
+  query = query_for(conn, url, version, quality)
+  Logger.debug("Query generated: #{inspect(query)}")
+
+  value = Cachex.fetch(:media_urls, query)
+  Logger.debug("Cache fetch for query returned: #{inspect(value)}")
+
+  maybe_do_telemetry(value)
+  Logger.debug("Completed telemetry for value: #{inspect(value)}")
+
+  maybe_bump_ttl(value, query)
+  Logger.debug("Attempted TTL bump for query: #{inspect(query)}")
+
+  rendered_result = render_resolved_media_or_error(conn, value)
+  Logger.debug("Rendered media or error for value: #{inspect(value)}")
+
+  Logger.debug("Rendered result: #{inspect(rendered_result)}")
+
+  rendered_result
+end
+
 
   defp query_for(conn, url, version, quality) do
     quality = quality || default_quality(conn)
