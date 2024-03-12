@@ -131,7 +131,7 @@ defmodule RetWeb.Api.V1.MediaController do
   rendered_result = render_resolved_media_or_error(conn, value)
   Logger.debug("Rendered media or error for value: #{inspect(value)}")
 
-  Logger.debug("Rendered result: #{inspect(rendered_result)}")
+  Logger.debug("Rendered result is: #{inspect(rendered_result)}")
 
   rendered_result
 end

@@ -1,4 +1,4 @@
-name: ret-imedu2
+name: ret-imedu
 
 on:
   push:
