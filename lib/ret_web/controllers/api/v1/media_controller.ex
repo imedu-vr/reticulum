@@ -125,7 +125,7 @@ defmodule RetWeb.Api.V1.MediaController do
   Logger.debug("Cache fetch for query returned: #{inspect(value)} with key: #{inspect(key)}")
 
   maybe_do_telemetry(value)
-  Logger.debug("Completed telemetry for value: #{inspect(value)}")
+  Logger.debug("Completed maybe do telemetry for value: #{inspect(value)}")
 
   maybe_bump_ttl(value, query)
   Logger.debug("Attempted TTL bump for query: #{inspect(query)}")
