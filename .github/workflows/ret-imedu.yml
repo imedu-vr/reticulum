@@ -3,7 +3,7 @@ name: ret-imedu
 on:
   push:
     branches:
-      - 'staging'
+      - 'master'
 
 jobs:
   build:
