@@ -9,6 +9,7 @@ defmodule Ret.MediaResolverQuery do
 end
 
 defmodule Ret.MediaResolver do
+  require Logger
   use Retry
   import Ret.HttpUtils
 
@@ -247,6 +248,8 @@ defmodule Ret.MediaResolver do
   defp ytdl_add_user_agent_for_quality(args, _quality), do: args
 
   defp resolve_non_video(%MediaResolverQuery{url: %URI{} = uri}, "deviantart.com") do
+
+    Logger.debug("resolve_non_video deviantart")
     Statix.increment("ret.media_resolver.deviant.requests")
 
     [uri, meta] =
@@ -286,6 +289,7 @@ defmodule Ret.MediaResolver do
          %MediaResolverQuery{url: %URI{path: "/gifs/" <> _rest} = uri},
          "giphy.com"
        ) do
+    Logger.debug("resolve_non_video giphy/gifs")
     resolve_giphy_media_uri(uri, "mp4")
   end
 
@@ -293,6 +297,7 @@ defmodule Ret.MediaResolver do
          %MediaResolverQuery{url: %URI{path: "/stickers/" <> _rest} = uri},
          "giphy.com"
        ) do
+    Logger.debug("resolve_non_video giphy/stickers")
     resolve_giphy_media_uri(uri, "url")
   end
 
@@ -300,6 +305,7 @@ defmodule Ret.MediaResolver do
          %MediaResolverQuery{url: %URI{path: "/videos/" <> _rest} = uri},
          "tenor.com"
        ) do
+    Logger.debug("resolve_non_video tenor/videos")
     {:commit, uri |> resolved(%{expected_content_type: "video/mp4"})}
   end
 
@@ -307,6 +313,7 @@ defmodule Ret.MediaResolver do
          %MediaResolverQuery{url: %URI{path: "/gallery/" <> gallery_id} = uri},
          "imgur.com"
        ) do
+    Logger.debug("resolve_non_video imgur/gallery")
     [resolved_url, meta] =
       "https://imgur-apiv3.p.mashape.com/3/gallery/#{gallery_id}"
       |> image_data_for_imgur_collection_api_url
@@ -318,6 +325,7 @@ defmodule Ret.MediaResolver do
          %MediaResolverQuery{url: %URI{path: "/a/" <> album_id} = uri},
          "imgur.com"
        ) do
+    Logger.debug("resolve_non_video imgur/album")
     [resolved_url, meta] =
       "https://imgur-apiv3.p.mashape.com/3/album/#{album_id}"
       |> image_data_for_imgur_collection_api_url
@@ -329,6 +337,7 @@ defmodule Ret.MediaResolver do
          %MediaResolverQuery{url: %URI{path: "/models/" <> model_id}} = query,
          "sketchfab.com" = root_host
        ) do
+    Logger.debug("resolve_non_video sketchfab/models")
     rate_limited_resolve(query, root_host, @sketchfab_rate_limit, fn ->
       resolve_sketchfab_model(model_id, query)
     end)
@@ -338,6 +347,7 @@ defmodule Ret.MediaResolver do
          %MediaResolverQuery{url: %URI{path: "/3d-models/" <> model_id}} = query,
          "sketchfab.com" = root_host
        ) do
+    Logger.debug("resolve_non_video sketchfab/3d-models")
     model_id = model_id |> String.split("-") |> Enum.at(-1)
 
     rate_limited_resolve(query, root_host, @sketchfab_rate_limit, fn ->
@@ -346,12 +356,15 @@ defmodule Ret.MediaResolver do
   end
 
   defp resolve_non_video(%MediaResolverQuery{} = query, _root_host) do
+    Logger.debug("resolve_non_video last")
     maybe_fallback_to_screenshot_opengraph_or_nothing(query)
   end
 
   defp maybe_fallback_to_screenshot_opengraph_or_nothing(
          %MediaResolverQuery{url: %URI{host: host}, version: _version} = query
        ) do
+
+    Logger.debug("maybe_fallback_to_screenshot_opengraph_or_nothing")
     # We fell back because we did not match any of the known hosts above, or ytdl resolution failed. So, we need to
     # validate the IP for this host before making further requests.
     resolved_ip = HttpUtils.resolve_ip(host)
@@ -373,6 +386,7 @@ defmodule Ret.MediaResolver do
          url: %URI{host: host} = uri,
          version: version
        }) do
+    Logger.debug("fallback_to_screenshot_opengraph_or_nothing")
     photomnemonic_endpoint = module_config(:photomnemonic_endpoint)
 
     # Crawl og tags for hubs rooms + scenes
@@ -409,6 +423,7 @@ defmodule Ret.MediaResolver do
   defp screenshot_commit_for_uri(uri, content_type, version) do
     photomnemonic_endpoint = module_config(:photomnemonic_endpoint)
 
+    Logger.debug("screenshot_commit_for_uri")
     query = URI.encode_query(url: uri |> URI.to_string())
 
     cached_file_result =
@@ -438,6 +453,8 @@ defmodule Ret.MediaResolver do
   end
 
   defp opengraph_result_for_uri(uri) do
+
+    Logger.debug("opengraph_result_for_uri")
     case uri
          |> URI.to_string()
          |> retry_get_until_success(
@@ -473,6 +490,8 @@ defmodule Ret.MediaResolver do
   end
 
   defp resolve_sketchfab_model(model_id, %MediaResolverQuery{url: %URI{} = uri, version: version}) do
+
+    Logger.debug("resolve_sketchfab_model")
     [uri, meta] =
       with api_key when is_binary(api_key) <- module_config(:sketchfab_api_key) do
         resolve_sketchfab_model(model_id, api_key, version)
@@ -484,6 +503,8 @@ defmodule Ret.MediaResolver do
   end
 
   defp get_sketchfab_model_zip_url(%{model_id: model_id, api_key: api_key}) do
+
+    Logger.debug("get_sketchfab_model_zip_url")
     case "https://api.sketchfab.com/v3/models/#{model_id}/download"
          |> retry_get_until_success(
            headers: [{"Authorization", "Token #{api_key}"}],
@@ -505,6 +526,8 @@ defmodule Ret.MediaResolver do
   end
 
   def download_sketchfab_model_to_path(%{model_id: model_id, api_key: api_key, path: path}) do
+
+    Logger.debug("download_sketchfab_model_to_path")
     case get_sketchfab_model_zip_url(%{model_id: model_id, api_key: api_key}) do
       {:ok, zip_url} ->
         Download.from(zip_url, path: path)
@@ -519,6 +542,8 @@ defmodule Ret.MediaResolver do
   end
 
   defp resolve_sketchfab_model(model_id, api_key, version \\ 1) do
+
+    Logger.debug("resolve_sketchfab_model")
     loader = fn path ->
       Statix.increment("ret.media_resolver.sketchfab.requests")
 
@@ -542,6 +567,8 @@ defmodule Ret.MediaResolver do
   end
 
   defp resolve_giphy_media_uri(%URI{} = uri, preferred_type) do
+
+    Logger.debug("resolve_giphy_media_uri")
     Statix.increment("ret.media_resolver.giphy.requests")
 
     [uri, meta] =
@@ -565,6 +592,8 @@ defmodule Ret.MediaResolver do
   end
 
   defp image_data_for_imgur_collection_api_url(imgur_api_url) do
+
+    Logger.debug("image_data_for_imgur_collection_api_url")
     with headers when is_list(headers) <- get_imgur_headers() do
       image_data =
         imgur_api_url
@@ -591,6 +620,8 @@ defmodule Ret.MediaResolver do
   #
   # https://youtube-dl-api-server.readthedocs.io/en/latest/api.html#api-methods
   defp retry_get_until_valid_ytdl_response(url) do
+
+    Logger.debug("retry_get_until_valid_ytdl_response")
     retry with: constant_backoff(1_000) |> randomize() |> expiry(3_500) do
       Statix.increment("ret.media_resolver.ytdl.requests")
 
