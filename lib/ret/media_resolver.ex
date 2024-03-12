@@ -39,6 +39,8 @@ defmodule Ret.MediaResolver do
     #       more easily track individual failures and only fallback when necessary.
     #       Also make sure they have a uniform response shape for indicating an
     #       error.
+
+    Logger.debug("media resolver => query: #{inspect(query)}, root_host #{inspect(root_host)}")
     case resolve(query, root_host) do
       :forbidden ->
         :forbidden
@@ -745,4 +747,11 @@ defmodule Ret.MediaResolver do
 
   def ytdl_ext(%MediaResolverQuery{supports_webm: false}), do: "[ext=mp4]"
   def ytdl_ext(_query), do: ""
+end
+
+#create a to string function for meduaresolverquery
+defimpl String.Chars, for: Ret.MediaResolverQuery do
+  def to_string(query) do
+    "#{query.url}:#{query.version}:#{query.quality}:#{query.supports_webm}"
+  end
 end

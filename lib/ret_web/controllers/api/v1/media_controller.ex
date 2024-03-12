@@ -119,9 +119,9 @@ defmodule RetWeb.Api.V1.MediaController do
   query = query_for(conn, url, version, quality)
   Logger.debug("Query generated: #{inspect(query)}")
 
-  key = "#{query.url}:#{query.version}:#{query.quality}:#{query.supports_webm}"
-  #value = Cachex.fetch(:media_urls, query)
-  value = Cachex.fetch(:media_urls, key)
+  key = "#{query.url}:#{query.version}:#{query.quality}"
+  value = Cachex.fetch(:media_urls, query)
+  #value = Cachex.fetch(:media_urls, key)
   Logger.debug("Cache fetch for query returned: #{inspect(value)} with key: #{inspect(key)}")
 
   maybe_do_telemetry(value)
