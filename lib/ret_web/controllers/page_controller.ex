@@ -650,7 +650,7 @@ defmodule RetWeb.PageController do
           client_options: [ssl: [{:versions, [:"tlsv1.2"]}]]
         )
 
-      body = ReverseProxyPlug.read_body(conn)
+      {body, conn} = ReverseProxyPlug.read_body(conn)
 
       %Conn{}
       |> Map.merge(conn)
@@ -729,7 +729,7 @@ defmodule RetWeb.PageController do
             # preserve_host_header: true
           )
 
-        body = ReverseProxyPlug.read_body(conn)
+        {body, conn} = ReverseProxyPlug.read_body(conn)
 
         Logger.debug("Body: #{inspect(body)}")
 
