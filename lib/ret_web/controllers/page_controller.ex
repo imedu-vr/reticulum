@@ -674,6 +674,8 @@ defmodule RetWeb.PageController do
 
     resolved_ip = HttpUtils.resolve_ip(host)
 
+    Logger.debug("URL: #{inspect(url)}, Resolved IP: #{inspect(resolved_ip)}")
+
     if HttpUtils.internal_ip?(resolved_ip) do
       conn |> send_resp(401, "Bad request.")
     else
@@ -681,11 +683,17 @@ defmodule RetWeb.PageController do
       # so we replace the host with the IP address here and use this url to make the proxy request.
       ip_url = URI.to_string(HttpUtils.replace_host(uri, resolved_ip))
 
+      Logger.debug("Internal IP Check Passed: #{inspect(not HttpUtils.internal_ip?(resolved_ip))}")
+      Logger.debug("IP URL: #{inspect(ip_url)}")
+
       # Disallow CORS proxying unless request was made to the cors proxy url
       cors_proxy_url = Application.get_env(:ret, RetWeb.Endpoint)[:cors_proxy_url]
 
+      Logger.debug("Cors proxy url: #{inspect(cors_proxy_url)}")
       [cors_scheme, cors_port, cors_host] =
         [:scheme, :port, :host] |> Enum.map(&Keyword.get(cors_proxy_url, &1))
+
+      Logger.debug("cors_scheme: #{inspect(cors_scheme)}, cors_port: #{inspect(cors_port)}, cors_host: #{inspect(cors_host)}")
 
       is_cors_proxy_url =
         if System.get_env("TURKEY_MODE") do
@@ -717,6 +725,8 @@ defmodule RetWeb.PageController do
         body = ReverseProxyPlug.read_body(conn)
         is_head = conn |> Conn.get_req_header("x-original-method") == ["HEAD"]
 
+        Logger.debug("Proxy Opts: #{inspect(opts)}, Is HEAD: #{inspect(is_head)}")
+
         %Conn{}|> Map.merge(conn)
         |> Map.put(
           :method,
@@ -726,6 +736,7 @@ defmodule RetWeb.PageController do
             conn.method
           end
         )
+
         # Need to strip path_info since proxy plug reads it
         |> Map.put(:path_info, [])
         |> ReverseProxyPlug.request(body, opts)
