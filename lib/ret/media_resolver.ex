@@ -12,8 +12,6 @@ defmodule Ret.MediaResolver do
   use Retry
   import Ret.HttpUtils
 
-  require Logger
-
   alias Ret.{CachedFile, MediaResolverQuery, Statix, HttpUtils}
 
   @ytdl_valid_status_codes [200, 500]

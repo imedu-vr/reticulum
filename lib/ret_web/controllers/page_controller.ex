@@ -1,4 +1,5 @@
 defmodule RetWeb.PageController do
+  require Logger
   use RetWeb, :controller
 
   alias Ret.{
