@@ -131,7 +131,7 @@ defmodule RetWeb.Api.V1.MediaController do
   # Logger.debug("Attempted TTL bump for query: #{inspect(query)}")
 
   rendered_result = render_resolved_media_or_error(conn, query)
-  Logger.debug("Rendered media or error for value: #{inspect(value)}")
+  Logger.debug("Rendered media or error for value: #{inspect(query)}")
 
   Logger.debug("Rendered result is: #{inspect(rendered_result)}")
 
