@@ -30,6 +30,9 @@ defmodule Ret.MediaResolver do
   @deviant_id_regex ~r/\"DeviantArt:\/\/deviation\/([^"]+)/
 
   def resolve(%MediaResolverQuery{url: url} = query) when is_binary(url) do
+
+    Logger.debug("in resolve")
+
     uri = url |> URI.parse()
     root_host = get_root_host(uri.host)
     query = Map.put(query, :url, uri)
@@ -434,6 +437,7 @@ defmodule Ret.MediaResolver do
     Logger.debug("screenshot_commit_for_uri")
     query = URI.encode_query(url: uri |> URI.to_string())
 
+    Logger.debug("query #{inspect(query)}")
     cached_file_result =
       CachedFile.fetch(
         "screenshot-#{query}-#{version}",
@@ -442,6 +446,7 @@ defmodule Ret.MediaResolver do
 
           url = "#{photomnemonic_endpoint}/screenshot?#{query}"
 
+          Logger.debug("Downloading from endpoint: #{inspect(url)}, query: #{inspect(query)}, path: #{inspect(path)}")
           case Download.from(url, path: path) do
             {:ok, _path} -> {:ok, %{content_type: "image/png"}}
             _error -> :error
