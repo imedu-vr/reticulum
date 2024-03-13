@@ -35,10 +35,5 @@ COPY --from=builder /_build/turkey/rel/ret/ .
 COPY --from=certr /certs .
 RUN apk update && apk add --no-cache bash openssl-dev openssl jq libstdc++ coreutils
 
-# test updating ssl_verify_fun
-RUN bin/mix deps.update ssl_verify_fun
-RUN bin/mix deps.clean --all
-RUN bin/mix deps.get
-
 COPY container/prod-run.sh /run.sh
 CMD bash /run.sh
