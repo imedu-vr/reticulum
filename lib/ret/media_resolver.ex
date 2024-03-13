@@ -41,6 +41,7 @@ defmodule Ret.MediaResolver do
     #       error.
 
     Logger.debug("media resolver => query: #{inspect(query)}, root_host #{inspect(root_host)}")
+    Logger.debug("result of resolve:  #{inspect(resolve(query, root_host))}")
     case resolve(query, root_host) do
       :forbidden ->
         :forbidden
@@ -118,6 +119,7 @@ defmodule Ret.MediaResolver do
     # to ensure that it is allowed.
     resolved_ip = HttpUtils.resolve_ip(query.url.host)
 
+    Logger.debug("Resolving IP: #{inspect(resolved_ip)}")
     case resolved_ip do
       nil ->
         :error
@@ -132,7 +134,11 @@ defmodule Ret.MediaResolver do
   end
 
   def resolve_with_ytdl(%MediaResolverQuery{} = query, root_host, ytdl_format) do
+
+    Logger.debug("resolve_with_ytdl")
     with ytdl_host when is_binary(ytdl_host) <- module_config(:ytdl_host) do
+
+      Logger.debug("fetch_ytdl_response: #{inspect(fetch_ytdl_response(query, ytdl_format))}")
       case fetch_ytdl_response(query, ytdl_format) do
         {:offline_stream, _body} ->
           {:commit,
@@ -747,11 +753,4 @@ defmodule Ret.MediaResolver do
 
   def ytdl_ext(%MediaResolverQuery{supports_webm: false}), do: "[ext=mp4]"
   def ytdl_ext(_query), do: ""
-end
-
-#create a to string function for meduaresolverquery
-defimpl String.Chars, for: Ret.MediaResolverQuery do
-  def to_string(query) do
-    "#{query.url}:#{query.version}:#{query.quality}:#{query.supports_webm}"
-  end
 end
