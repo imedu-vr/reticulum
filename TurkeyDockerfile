@@ -36,9 +36,8 @@ COPY --from=certr /certs .
 RUN apk update && apk add --no-cache bash openssl-dev openssl jq libstdc++ coreutils
 
 # test updating ssl_verify_fun
-RUN mix deps.update ssl_verify_fun
+RUN bin/mix deps.update ssl_verify_fun
 RUN bin/mix deps.clean --all
-RUN mix deps.get
 RUN bin/mix deps.get
 
 COPY container/prod-run.sh /run.sh
