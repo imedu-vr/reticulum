@@ -638,6 +638,8 @@ defmodule RetWeb.PageController do
   end
 
   defp imgproxy_proxy(%Conn{request_path: "/thumbnail/" <> encoded_url, query_string: qs} = conn) do
+
+    Logger.debug("In imgproxy_proxy")
     with imgproxy_url <- Application.get_env(:ret, RetWeb.Endpoint)[:imgproxy_url],
          [scheme, port, host] =
            [:scheme, :port, :host] |> Enum.map(&Keyword.get(imgproxy_url, &1)),
@@ -650,6 +652,7 @@ defmodule RetWeb.PageController do
           client_options: [ssl: [{:versions, [:"tlsv1.2"]}]]
         )
 
+      #VT: changed from `body = ...` to this. It seems ReverseProxyPlug returns a tuple?
       {body, conn} = ReverseProxyPlug.read_body(conn)
 
       %Conn{}
@@ -729,7 +732,8 @@ defmodule RetWeb.PageController do
             # preserve_host_header: true
           )
 
-        {body, conn} = ReverseProxyPlug.read_body(conn)
+        #VT: changed from `body = ...` to this. It seems ReverseProxyPlug returns a tuple?
+        {body, conn2} = ReverseProxyPlug.read_body(conn)
 
         Logger.debug("Body: #{inspect(body)}")
 

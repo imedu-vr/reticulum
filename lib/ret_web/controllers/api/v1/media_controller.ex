@@ -119,16 +119,14 @@ defmodule RetWeb.Api.V1.MediaController do
   query = query_for(conn, url, version, quality)
   Logger.debug("Query generated: #{inspect(query)}")
 
-  key = "#{query.url}:#{query.version}:#{query.quality}"
-  # value = Cachex.fetch(:media_urls, query)
-  # #value = Cachex.fetch(:media_urls, key)
-  # Logger.debug("Cache fetch for query returned: #{inspect(value)} with key: #{inspect(query)}")
+  value = Cachex.fetch(:media_urls, query)
+  Logger.debug("Cache fetch for query returned: #{inspect(value)} with key: #{inspect(query)}")
 
-  # maybe_do_telemetry(value)
-  # Logger.debug("Completed maybe do telemetry for value: #{inspect(value)}")
+  maybe_do_telemetry(value)
+  Logger.debug("Completed maybe do telemetry for value: #{inspect(value)}")
 
-  # maybe_bump_ttl(value, query)
-  # Logger.debug("Attempted TTL bump for query: #{inspect(query)}")
+  maybe_bump_ttl(value, query)
+  Logger.debug("Attempted TTL bump for query: #{inspect(query)}")
 
   rendered_result = render_resolved_media_or_error(conn, query)
   Logger.debug("Rendered media or error for value: #{inspect(query)}")
